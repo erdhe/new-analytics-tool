@@ -105,14 +105,20 @@ def time_trend(df, date_col, value_col, freq="M"):
     return out
 
 def similarity(a, b):
+    # column names can be non-strings (floats/None) depending on the Excel file
+    a = "" if a is None or (isinstance(a, float) and np.isnan(a)) else str(a)
+    b = "" if b is None or (isinstance(b, float) and np.isnan(b)) else str(b)
+
     a, b = a.strip(), b.strip()
-    if a == b:
+    if a == b and a != "":
         return 1.0
+
     ta = set(re.findall(r"[a-z0-9]+", a.lower()))
     tb = set(re.findall(r"[a-z0-9]+", b.lower()))
     if not ta or not tb:
         return 0.0
     return len(ta & tb) / len(ta | tb)
+
 
 def answer_question(df, q):
     ql = q.strip().lower()
