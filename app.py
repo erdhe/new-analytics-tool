@@ -164,6 +164,20 @@ except Exception as e:
 sheet_names = list(sheets.keys())
 sheet = st.selectbox("Select sheet", sheet_names)
 df = sheets[sheet].copy()
+# Auto-clean numeric-looking columns
+for col in df.columns:
+    if df[col].dtype == "object":
+        # Remove currency symbols, commas, spaces
+        cleaned = (
+            df[col]
+            .astype(str)
+            .str.replace(r"[^\d\.\-]", "", regex=True)
+        )
+        # Try converting to numeric
+        converted = pd.to_numeric(cleaned, errors="coerce")
+        # If at least 60% can be converted → treat as numeric
+        if converted.notna().mean() > 0.6:
+            df[col] = converted
 
 date_cols = detect_date_cols(df)
 df = coerce_dates(df, date_cols)
